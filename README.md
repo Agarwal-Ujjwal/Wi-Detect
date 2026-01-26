@@ -1,43 +1,123 @@
-# Wi-Detect: Non-Invasive Safety Guardian
+# ESP32 CSI-Based Human Activity Recognition  
 
-> **Team:** HardCoreCoding | **Event:** Lady Ada Hackathon
->
-> **Members:** Ujjwal Agarwal | Krishnam Nuwal | Nityam Aditya | Lakshya Pareta | Lokendra
+# Project Phase 1: Hardware Setup & System Integration
 
-## 📖 Project Overview
-**Wi-Detect** is a privacy-first safety system designed to detect violence, struggles, and falls in real-time without the use of invasive cameras.
-
-Built at the intersection of **Physics (Wave Theory)** and **Machine Learning**, our solution leverages the Wi-Fi signals already present in a room to act as an invisible guardian. By analysing the scattering patterns of Electromagnetic (EM) waves, we can distinguish between routine movements and critical safety threats while maintaining 100% user anonymity.
+## Goal
+Establish a stable **Connection State Information (CSI)** link between two **ESP32 microcontrollers** (Transmitter and Receiver) to capture Wi-Fi signal variations for **Human Activity Recognition (HAR)**.
 
 ---
 
-## ⚙️ How It Works
+## Project Progress
 
-Our system transforms standard Wi-Fi hardware into a sensing radar using **Channel State Information (CSI)**.
+### 1. Selection of Development Framework: ESP-IDF
+We chose to use the **Espressif IoT Development Framework (ESP-IDF)** instead of the simpler Arduino IDE.
 
-### 1. The Physics (Hardware Layer)
-* **Device Setup:** We utilize two **ESP32 Microcontrollers**—one acting as a *Transmitter (Tx)* and the other as a *Receiver (Rx)*.
-* **Multipath Propagation:** Wi-Fi signals are Electromagnetic waves. When a person moves through the field between the Tx and Rx, they induce specific scattering and reflection patterns known as **multipath fading**.
-* **The Sensing Zone:** The system establishes an invisible Fresnel zone (elliptical sensing area). Specific human actions (walking vs. falling) disturb the carrier waves in unique, repeatable ways.
+Arduino hides many low-level hardware details. To capture **CSI**, which represents raw electromagnetic (EM) wave data, we required:
+- Direct access to the **Wi-Fi chip’s Physical Layer**
+- Support for **FreeRTOS**
 
-### 2. The Intelligence (ML Layer)
-* **Data Extraction:** The Receiver ESP32 extracts raw **CSI (Channel State Information)** data, which captures the amplitude and phase variations of the Wi-Fi signal at a sub-carrier level.
-* **Pattern Recognition:** This data is fed into a **Python-based Machine Learning model**.
-* **Classification:** The model is trained to recognise the specific "wave interference signatures" of dangerous events. It can distinguish a **normal walk** from a **violent fall** or struggle with high precision.
+These features are not fully available in the Arduino IDE, making ESP-IDF essential.
 
 ---
 
-## 🚀 Key Features
+### 2. Flash Code Upload
+During flashing:
+- Existing flash memory is erased
+- Custom firmware is uploaded
 
-* **Privacy-Centric:** No cameras or microphones. The system sees waves, not faces, making it ideal for sensitive areas like washrooms or dorms.
-* **Real-Time Detection:** Instant analysis of CSI data allows for immediate alerting capabilities.
-* **Low Cost:** Built on affordable ESP32 hardware rather than expensive radar equipment.
-* **Interdisciplinary:** A practical application of Wave Physics applied to Deep Learning.
+The uploaded code enables detection and monitoring of Wi-Fi waves.
 
 ---
 
-## 🛠️ Tech Stack
+### 3. Connecting the Transmitter (Tx)
+The **Transmitter (Tx)** detects Wi-Fi signals in its surrounding environment.
 
-* **Hardware:** ESP32 Microcontrollers (Tx/Rx Pair)
-* **Firmware:** Custom CSI collection firmware (C++)
-* **Software:** Python, Scipy (Signal Processing), PyTorch/TensorFlow (LSTM/CNN Models)
+Steps performed:
+- Flash code uploaded to the Tx ESP32
+- Initially powered via laptop (USB)
+- Later powered using an **external power source** (USB adapter)
+
+---
+
+### 4. Setting Up the Receiver (Rx)
+The **Receiver (Rx)** captures Wi-Fi signals and calculates wave disturbances caused by motion.
+
+Implementation details:
+- Development focused on the `active_sta` (Active Station) directory
+- Receiver initially outputs CSI data as a **matrix of numerical values**
+- Python script **`main_data.py`** is used for data processing
+
+This script:
+1. Reads CSI data from CSV files
+2. Generates signal graphs for analysis
+
+---
+
+## Graph Interpretation
+
+- **Y-axis**: Amplitude-like magnitude of received signals  
+- **High Peaks**: Waves are *in phase*  
+- **Troughs**: Waves are *out of phase*  
+![Graph]()
+When a person waves their hand:
+- Wi-Fi signals reflect differently
+- Path lengths change
+- Interference patterns shift
+
+This results in **wobble or ripple-like wave patterns**, which are the features learned by the **LSTM model**.
+
+---
+
+## 5. CSV File Generation
+We generated:
+- `Fall_n.csv`
+- `Walk_n.csv`
+
+A total of **10 CSV files** were created for training the model to classify different **human motions**.
+
+---
+
+## Bugs and Challenges Faced
+
+---
+
+### Challenge 1: Graph Visualization Failed
+Issues encountered:
+- Graph window froze or became unresponsive
+- Program crashed with:`ImportError: Failed to import Qt binding`
+
+The code defaulted to Qt5Agg which we modified it to use the TkAgg
+
+---
+
+### Challenge 2:The Data Break(fragmented)
+Initially the data we received was not the complete just recieveing the closing bracket of matrix
+
+---
+
+### Challenge 3:Baud rate synchronize:
+The graph remained flat/blank even after fixing the code. It shows the raw data consisted of "Garbage Characters" (e.g., \x80\x00).
+
+---
+
+### Challenge 4: Settings Change:
+The system was stable but printed CSI will not be collected.
+We located the specific feature in the CSI Tool Config menu and
+manually checked the box to **Enable CSI Collection**.
+
+---
+
+### THe main Challenge 5:Priority Error:
+The error popped up assert `failed: prvInitialiseNewTask (uxPriority < 25)`. This error took max time to get solved …we set priority<20 .
+Tilized Boot (Holding BOOT button before powering on) to force the crashing chip into Download Mode, bypassing the boot loop to allow re-flashing. 
+And Identified the specific line in the (`main/main.cc`) requesting Priority 100.
+
+Here a small clip of error [LINK](https://drive.google.com/file/d/1A8OPYophXZulWxV3fLxsJDpoBn2jWs7h/view)
+
+---
+
+## Current Achievement Status
+- **Hardware State:** ESP32 Transceiver pair is fully functional.
+- **Software State:** We are building LSTM model to train over those csv files . and the roadmap is in our [Main_Doc](https://drive.google.com/file/d/1wGrFJE2-akHcZTiFLCfy2ZXJ1K0hqhLB/view)
+
+---
