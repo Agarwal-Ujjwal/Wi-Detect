@@ -1,0 +1,13 @@
+# ESP-IDF build artifacts
+active_sta/build/
+passive/build/
+active_ap/build/
+**/*.old
+**/__pycache__/
+*.pyc
+
+
+model/wi_detect_model.pkl
+
+
+.DS_Store
