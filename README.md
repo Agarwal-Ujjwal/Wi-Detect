@@ -152,7 +152,7 @@ Data is stored as CSV with columns: `label, timestamp, rssi, amp_0 ... amp_48`
 
 ## Team
 
-We are **HardCoreCoding** — a team of Y25s at IIT Kanpur.
+We are team **HardCoreCoding** — a group of Y25s at IIT Kanpur.
 
 - Nityam Aditya  
 - Krishnam Nuwal  
